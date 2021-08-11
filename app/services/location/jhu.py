@@ -9,7 +9,7 @@ from asyncache import cached
 from cachetools import TTLCache
 
 from ...caches import check_cache, load_cache
-from ...coordinates import Coordinates
+from ...coordinates import CDirector
 from ...location import TimelinedLocation
 from ...models import Timeline
 from ...utils import countries
@@ -178,7 +178,7 @@ async def get_locations():
                 location["country"],
                 location["province"],
                 # Coordinates.
-                Coordinates(latitude=coordinates["lat"], longitude=coordinates["long"]),
+                CDirector.construct(coordinates["lat"], coordinates["long"]),
                 # Last update.
                 datetime.utcnow().isoformat() + "Z",
                 # Timelines (parse dates as ISO).

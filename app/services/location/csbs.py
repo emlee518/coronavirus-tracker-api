@@ -7,7 +7,7 @@ from asyncache import cached
 from cachetools import TTLCache
 
 from ...caches import check_cache, load_cache
-from ...coordinates import Coordinates
+from ...coordinates import CDirector
 from ...location.csbs import CSBSLocation
 from ...utils import httputils
 from . import LocationService
@@ -82,7 +82,7 @@ async def get_locations():
                     state,
                     county,
                     # Coordinates.
-                    Coordinates(item["Latitude"], item["Longitude"]),
+                    CDirector.construct(item["Latitude"], item["Longitude"]),
                     # Last update (parse as ISO).
                     datetime.strptime(last_update, "%Y-%m-%d %H:%M").isoformat() + "Z",
                     # Statistics.
