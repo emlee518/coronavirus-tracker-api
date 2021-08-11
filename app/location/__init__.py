@@ -3,6 +3,22 @@ from ..coordinates import Coordinates
 from ..utils import countries
 from ..utils.populations import country_population
 
+class Leaf:  
+
+    def __init__(self, value): 
+        self.value = value
+  
+class Composite:
+  
+    def __init__(self, composite):
+        self.composite = composite
+        self.children = {}
+  
+    def add(self, key, value):
+        self.children[key] = value
+  
+    def pop(self, key):
+        self.children.pop(key)
 
 # pylint: disable=redefined-builtin,invalid-name
 class Location:  # pylint: disable=too-many-instance-attributes
@@ -10,22 +26,27 @@ class Location:  # pylint: disable=too-many-instance-attributes
     A location in the world affected by the coronavirus.
     """
 
+    root = Composite("root")
+    latest = Composite("latest")
     def __init__(
         self, id, country, province, coordinates, last_updated, confirmed, deaths, recovered,
     ):  # pylint: disable=too-many-arguments
         # General info.
-        self.id = id
-        self.country = country.strip()
-        self.province = province.strip()
-        self.coordinates = coordinates
+        self.root.add("id", Leaf(id).value)
+        self.root.add("country", Leaf(country).value.strip())
+        self.root.add("country_code", Leaf(self.country_code()).value)
+        self.root.add("country_population", Leaf(self.country_population()).value)
+        self.root.add("province", Leaf(province).value.strip())
+        self.root.add("coordinates", Leaf(coordinates.serialize()).value)
 
         # Last update.
-        self.last_updated = last_updated
+        self.root.add("last_updated", Leaf(last_updated).value)
 
         # Statistics.
-        self.confirmed = confirmed
-        self.deaths = deaths
-        self.recovered = recovered
+        self.root.add("latest", self.latest.children)
+        self.latest.add("confirmed", Leaf(confirmed).value)
+        self.latest.add("deaths", Leaf(deaths).value)
+        self.latest.add("recovered", Leaf(recovered).value)
 
     @property
     def country_code(self):
@@ -54,24 +75,7 @@ class Location:  # pylint: disable=too-many-instance-attributes
         :returns: The serialized location.
         :rtype: dict
         """
-        return {
-            # General info.
-            "id": self.id,
-            "country": self.country,
-            "country_code": self.country_code,
-            "country_population": self.country_population,
-            "province": self.province,
-            # Coordinates.
-            "coordinates": self.coordinates.serialize(),
-            # Last updated.
-            "last_updated": self.last_updated,
-            # Latest data (statistics).
-            "latest": {
-                "confirmed": self.confirmed,
-                "deaths": self.deaths,
-                "recovered": self.recovered,
-            },
-        }
+        return self.root.children     
 
 
 class TimelinedLocation(Location):
